@@ -25,10 +25,9 @@ int gWindowHeight = 768;
 GLFWwindow* gWindow = NULL;
 bool gWireframe = false;
 
-
 FPSCamera fpsCamera(glm::vec3(0.0f, 3.0f, 10.0f));
 const double ZOOM_SENSITIVITY = -3.0;
-const float MOVE_SPEED = 5.0; // units per second
+const float MOVE_SPEED = 15.0; // units per second
 const float MOUSE_SENSITIVITY = 0.1f;
 
 // Function prototypes
@@ -81,33 +80,68 @@ int main()
 	texture[8].loadTexture("textures/neptune.jpg", true);
 	texture[9].loadTexture("textures/pluto.jpg", true);
 
-	// Model positions
-	glm::vec3 modelPos[] = {
-		glm::vec3(0.0f, 0.0f, 0.0f),	// 0 sun 
-		glm::vec3(8.0f, 0.0f, 0.0f),	// 1 mercury
-		glm::vec3(12.0f, 0.0f, 0.0f),	// 2 venus
-		glm::vec3(16.0f, 0.0f, 0.0f),	// 3 earth
-		glm::vec3(20.0f, 0.0f, 0.0f),	// 4 mars
-		glm::vec3(26.0f, 0.0f, 0.0f),	// 5 jupiter
-		glm::vec3(36.0f, 0.0f, 0.0f),	// 6 saturn
-		glm::vec3(46.0f, 0.0f, 0.0f),	// 7 uranus
-		glm::vec3(56.0f, 0.0f, 0.0f),	// 8 neptune
-		glm::vec3(64.0f, 0.0f, 0.0f)	// 9 pluto
+	// Model positions modifier
+	// distance based on jpl.nasa.gov au distance from sun x 5
+	float modelPosMod[] = {
+		0,	// 0 sun 
+		1.9,	// 1 mercury
+		3.6,	// 2 venus
+		5, 	// 3 earth
+		7.6,	// 4 mars
+		25.1,	// 5 jupiter
+		45.2,	// 6 saturn
+		96,	// 7 uranus
+		150.3,	// 8 neptune
+		197.5 	// 9 pluto
 	};
 
 	// Model scale
 	glm::vec3 modelScale[] = {
-		glm::vec3(5.0f, 5.0f, 5.0f),	// 0 sun 
-		glm::vec3(0.4f, 0.4f, 0.4f),	// 1 mercury
-		glm::vec3(1.0f, 1.0f, 1.0f),	// 2 venus
-		glm::vec3(1.0f, 1.0f, 1.0f),	// 3 earth
-		glm::vec3(0.5f, 0.5f, 0.5f),	// 4 mars
-		glm::vec3(3.5f, 3.5f, 3.5f),	// 5 jupiter
-		glm::vec3(3.5f, 3.5f, 3.5f),	// 6 saturn
-		glm::vec3(2.5f, 2.5f, 2.5f),	// 7 uranus
-		glm::vec3(2.5f, 2.5f, 2.5f),	// 8 neptune
-		glm::vec3(0.2f, 0.2f, 0.2f)		// 9 pluto
+		glm::vec3(1.5f, 1.5f, 1.5f),	// 0 sun 
+		glm::vec3(0.1f, 0.1f, 0.1f),	// 1 mercury
+		glm::vec3(0.3f, 0.3f, 0.3f),	// 2 venus
+		glm::vec3(0.3f, 0.3f, 0.3f),	// 3 earth
+		glm::vec3(0.2f, 0.2f, 0.2f),	// 4 mars
+		glm::vec3(1.0f, 1.0f, 1.0f),	// 5 jupiter
+		glm::vec3(0.8f, 0.8f, 0.8f),	// 6 saturn
+		glm::vec3(0.5f, 0.5f, 0.5f),	// 7 uranus
+		glm::vec3(0.6f, 0.6f, 0.6f),	// 8 neptune
+		glm::vec3(0.05f, 0.05f, 0.05f)		// 9 pluto
 	};
+
+	// Model rotation speed modifier
+	float modelRot[] = {
+		100,	// 0 sun 
+		100,	// 1 mercury
+		100,	// 2 venus
+		100,	// 3 earth
+		100,	// 4 mars
+		100,	// 5 jupiter
+		100,	// 6 saturn
+		100,	// 7 uranus
+		100,	// 8 neptune
+		100		// 9 pluto
+	};
+
+	// Model orbit speed modifier
+	// assuming earth with a speed of 10
+	float modelOrbit[] = {
+		0,  	// 0 sun 
+		41.4,	// 1 mercury
+		16.2,	// 2 venus
+		10,  	// 3 earth
+		5.3,	// 4 mars
+		0.84,	// 5 jupiter
+		0.34,	// 6 saturn
+		0.12,	// 7 uranus
+		0.061,	// 8 neptune
+		0.0403	// 9 pluto
+	};
+
+	//array variables
+	float angle[10] = {0};
+	float rotation[10] = {0};
+	glm::vec3 modelPos[10] = {glm::vec3(0.0f, 0.0f, 0.0f)};
 
 	double lastTime = glfwGetTime();
 
@@ -145,7 +179,12 @@ int main()
 		// Render the scene
 		for (int i = 0; i < numModels; i++)
 		{
-			model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::scale(glm::mat4(1.0), modelScale[i]);
+			angle[i] += deltaTime * modelOrbit[i];
+			rotation[i] += deltaTime * modelRot[i];
+			modelPos[i].x = modelPosMod[i] * sinf(glm::radians(angle[i]));
+			modelPos[i].z = modelPosMod[i] * cosf(glm::radians(angle[i]));
+			model = glm::translate(glm::mat4(1.0), modelPos[i]) * glm::rotate(glm::mat4(1.0f), glm::radians(rotation[i]), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::scale(glm::mat4(1.0), modelScale[i]);
+			
 			shaderProgram.setUniform("model", model);
 
 			texture[i].bind(0);		// set the texture before drawing.  Our simple OBJ mesh loader does not do materials yet.
