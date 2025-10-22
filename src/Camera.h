@@ -9,44 +9,51 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/constants.hpp"
 
-
 //--------------------------------------------------------------
 // Abstract Camera Class
 //--------------------------------------------------------------
 class Camera
 {
 public:
-	glm::mat4 getViewMatrix() const;
+    // Get the view matrix for this camera
+    glm::mat4 getViewMatrix() const;
 
-	virtual void setPosition(const glm::vec3& position) {}
-	virtual void rotate(float yaw, float pitch) {}  // in degrees
-	virtual void move(const glm::vec3& offsetPos) {}
+    // Virtual functions for camera movement
+    virtual void setPosition(const glm::vec3& position) {}
+    virtual void rotate(float yaw, float pitch) {}  // in degrees
+    virtual void move(const glm::vec3& offsetPos) {}
 
-	const glm::vec3& getLook() const;
-	const glm::vec3& getRight() const;
-	const glm::vec3& getUp() const;
+    // Get camera vectors and position
+    const glm::vec3& getLook() const;
+    const glm::vec3& getRight() const;
+    const glm::vec3& getUp() const;
+    const glm::vec3& getPosition() const { return mPosition; }  // Added for lighting
 
-	float getFOV() const   { return mFOV; }
-	void setFOV(float fov) { mFOV = fov; }		// in degrees
+    // Field of view getter and setter
+    float getFOV() const   { return mFOV; }
+    void setFOV(float fov) { mFOV = fov; }        // in degrees
 
 protected:
-	Camera();
+    // Protected constructor for base class
+    Camera();
 
-	virtual void updateCameraVectors() {}
+    // Update camera vectors (implemented in derived classes)
+    virtual void updateCameraVectors() {}
 
-	glm::vec3 mPosition;
-	glm::vec3 mTargetPos;
-	glm::vec3 mLook;
-	glm::vec3 mUp;
-	glm::vec3 mRight;
-	const glm::vec3 WORLD_UP;
+    // Camera properties - mPosition is now accessible via getPosition()
+    glm::vec3 mPosition;
+    glm::vec3 mTargetPos;
+    glm::vec3 mLook;
+    glm::vec3 mUp;
+    glm::vec3 mRight;
+    const glm::vec3 WORLD_UP;
 
-	// Euler Angles (in radians)
-	float mYaw;
-	float mPitch;
+    // Euler Angles (in radians)
+    float mYaw;
+    float mPitch;
 
-	// Camera parameters
-	float mFOV; // degrees
+    // Camera parameters
+    float mFOV; // degrees
 };
 
 //--------------------------------------------------------------
@@ -55,18 +62,18 @@ protected:
 class FPSCamera : public Camera
 {
 public:
+    // Constructor with default parameters
+    FPSCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), float yaw = glm::pi<float>(), float pitch = 0.0f);
 
-	FPSCamera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), float yaw = glm::pi<float>(), float pitch = 0.0f); // (yaw) initial angle faces -Z
-
-	virtual void setPosition(const glm::vec3& position);
-	virtual void rotate(float yaw, float pitch);	// in degrees
-	virtual void move(const glm::vec3& offsetPos);
+    // Overridden functions
+    virtual void setPosition(const glm::vec3& position);
+    virtual void rotate(float yaw, float pitch);    // in degrees
+    virtual void move(const glm::vec3& offsetPos);
 
 private:
-
-	void updateCameraVectors();
+    // Update camera vectors based on current yaw and pitch
+    void updateCameraVectors();
 };
-
 
 //--------------------------------------------------------------
 // Orbit Camera Class
@@ -74,20 +81,20 @@ private:
 class OrbitCamera : public Camera
 {
 public:
+    OrbitCamera();
 
-	OrbitCamera();
+    // Overridden functions
+    virtual void rotate(float yaw, float pitch);    // in degrees
 
-	virtual void rotate(float yaw, float pitch);    // in degrees
-
-	// Camera Controls
-	void setLookAt(const glm::vec3& target);
-	void setRadius(float radius);
+    // Camera Controls
+    void setLookAt(const glm::vec3& target);
+    void setRadius(float radius);
 
 private:
+    // Update camera vectors for orbit camera
+    void updateCameraVectors();
 
-	void updateCameraVectors();
-
-	// Camera parameters
-	float mRadius;
+    // Camera parameters
+    float mRadius;
 };
 #endif //CAMERA_H

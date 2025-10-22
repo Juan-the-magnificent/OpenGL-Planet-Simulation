@@ -1,7 +1,6 @@
 //-----------------------------------------------------------------------------
 // Mesh.h
-//
-// Basic Mesh class
+// Basic Mesh class with lighting support
 //-----------------------------------------------------------------------------
 #ifndef MESH_H
 #define MESH_H
@@ -9,32 +8,31 @@
 #include <vector>
 #include <string>
 #define GLEW_STATIC
-#include "GL/glew.h"	// Important - this header must come before glfw3 header
+#include "GL/glew.h"
 #include "glm/glm.hpp"
-
 
 struct Vertex
 {
-	glm::vec3 position;
-	glm::vec2 texCoords;
+    glm::vec3 position;
+    glm::vec2 texCoords;
+    glm::vec3 normal;  // Added for lighting
 };
 
 class Mesh
 {
 public:
+    Mesh();
+    ~Mesh();
 
-	 Mesh();
-	~Mesh();
-
-	bool loadOBJ(const std::string& filename);
-	void draw();
+    bool loadOBJ(const std::string& filename);
+    void draw();
 
 private:
+    void initBuffers();
+    void calculateNormals();  // Calculate normals if OBJ doesn't have them
 
-	void initBuffers();
-
-	bool mLoaded;
-	std::vector<Vertex> mVertices;
-	GLuint mVBO, mVAO;
+    bool mLoaded;
+    std::vector<Vertex> mVertices;
+    GLuint mVBO, mVAO;
 };
 #endif //MESH_H
